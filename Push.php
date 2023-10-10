@@ -1,23 +1,19 @@
 <?php
 
+namespace Push\Pusher;
+
 use Minishlink\WebPush\VAPID;
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
+use Push\Data\SecureKeys;
 
 require 'vendor/autoload.php';
 
 class Push
 {
-    private $publicKey = 'BGcOdUDx04kICiYYEt8ifKGCiq_NuZ7I_9UiogTDpe2WkIOnpdUx8yrJnrHuot9B4f-AOmT39_urJ17fuQ2usWE';
-    private $privateKey = 'AsDltFyg5tYfNarSGWomW3_3E20P3CL4cuu0cs2QYpU';
-
     public $subject = 'minhajchamp@gmail.com';
-
-    public $endPoint, $publicKeyp25, $authToken;
-
+    private $endPoint, $publicKeyp25, $authToken;
     public $message;
-
-    public static $report;
     private WebPush $webPush;
 
     public function __construct($endPoint, $publicKeyp25, $authToken, $message)
@@ -28,19 +24,11 @@ class Push
         $this->message = $message;
     }
 
-    public function vapidAuth(): array
-    {
-        return [
-            'VAPID' => [
-                'subject' => $this->subject,
-                'publicKey' => $this->publicKey,
-                'privateKey' => $this->privateKey,
-            ],
-        ];
-    }
-
     /**
-     * @throws ErrorException
+     * Description: Initializes the Web Push
+     * @param null $report
+     * @return Push
+     * @throws \ErrorException
      */
     public function init($report = null): Push
     {
@@ -50,25 +38,25 @@ class Push
     }
 
     /**
-     * @throws JsonException
-     * @throws ErrorException
+     * Description: It subscribes the current user to WebPush
+     * @return Subscription
+     * @throws \ErrorException
      */
     public function subscribe(): Subscription
     {
-        $subscription = Subscription::create([
+        return Subscription::create([
             "endpoint" => $this->endPoint,
             'publicKey' => $this->publicKeyp25,
             'authToken' => $this->authToken,
             'contentEncoding' => 'aesgcm'
         ]);
-
-        return $subscription;
     }
 
-
     /**
-     * @throws ErrorException
-     * @throws JsonException
+     * Description: It sends the message and subscriber into queueNotification
+     * @return void
+     * @throws \ErrorException
+     * @throws \JsonException
      */
     public function send(): void
     {
@@ -79,7 +67,9 @@ class Push
     }
 
     /**
-     * @throws ErrorException
+     * Description: It generates the report, could be turned off.
+     * @return array|string[]
+     * @throws \ErrorException
      */
     public function report(): array
     {
@@ -101,7 +91,23 @@ class Push
     }
 
     /**
-     * @throws ErrorException
+     * It returns VAPID keys
+     * @return array[]
+     */
+    public function vapidAuth(): array
+    {
+        return [
+            'VAPID' => [
+                'subject' => $this->subject,
+                'publicKey' => SecureKeys::PUBLIC_KEY,
+                'privateKey' => SecureKeys::PRIVATE_KEY,
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     * @throws \ErrorException
      */
     public static function createVapidKeys(): array
     {
